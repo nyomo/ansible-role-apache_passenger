@@ -1,0 +1,12 @@
+---
+# handlers file for apache_passenger
+- name: Restart apache docker
+  debug: 
+    msg: "docker"
+  when: is_docker.stdout | bool
+- name: Restart apache systemd
+  become: yes
+  systemd:
+    name: httpd
+    state: restarted
+  when: not is_docker.stdout | bool

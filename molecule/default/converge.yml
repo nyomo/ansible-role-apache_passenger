@@ -1,0 +1,10 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: false
+  roles:
+    - nyomo.rbenv
+  tasks:
+    - name: "Include apache_passenger"
+      include_role:
+        name: nyomo.apache_passenger

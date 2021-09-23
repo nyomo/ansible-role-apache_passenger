@@ -1,0 +1,8 @@
+---
+- name: Install apache
+  yum:
+    name:
+      - httpd
+      - httpd-devel
+      - libcurl-devel
+    state: present

@@ -1,0 +1,2 @@
+- name: nyomo.rbenv
+  src: https://github.com/nyomo/ansible-role-rbenv.git

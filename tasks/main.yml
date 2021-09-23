@@ -1,0 +1,67 @@
+---
+# tasks file for apache_passenger
+#
+- name: check running on docker?
+  shell: set -o pipefail | ls -l /.dockerenv | wc -l
+  register: is_docker
+  changed_when: false
+- name: Include install packages task
+  include_tasks: install_centos7.yml
+- name: Gem install passenger
+  become: yes
+  become_method: sudo
+  become_flags: '-i'
+  gem:
+    name: passenger
+    version: 6.0.10
+    user_install: false
+    state: present
+  notify:
+    - Restart apache docker
+    - Restart apache systemd
+- name: install passenger apache2 module
+  become: yes
+  become_method: sudo
+  become_flags: '-i'
+  command: passenger-install-apache2-module --auto --languages ruby
+  changed_when: false
+- name: get passenger.conf
+  become: yes
+  become_method: sudo
+  become_flags: '-i'
+  command: passenger-install-apache2-module --snippet
+  register: passenger_conf_cmd
+  changed_when: false
+- name: set /tmp/passenger.conf
+  copy:
+    content: "{{ passenger_conf_cmd.stdout }}"
+    dest: /tmp/passenger.conf
+    mode: 0644
+  changed_when: false
+- name: stat /tmp/passenger.conf
+  stat:
+    path: /tmp/passenger.conf
+  register: passenger_conf_temp
+- name: stat /etc/.../passenger.conf
+  stat:
+    path: /etc/httpd/conf.modules.d/passenger.conf
+  register: passenger_conf_d
+- name: copy passenger.conf
+  become: yes
+  copy:
+    content: "{{ passenger_conf_cmd.stdout }}"
+    dest: /etc/httpd/conf.modules.d/passenger.conf
+    mode: 0644
+    owner: root
+    group: root
+  notify:
+    - Restart apache docker
+    - Restart apache systemd
+  when: not passenger_conf_d.stat.exists 
+    or not ( passenger_conf_temp.stat.checksum  == passenger_conf_d.stat.checksum )
+- name: notify
+  debug: msg="notify" 
+  changed_when: true
+  notify:
+    - Restart apache docker
+    - Restart apache systemd

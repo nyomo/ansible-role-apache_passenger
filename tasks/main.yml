@@ -71,9 +71,3 @@
     - Restart apache systemd
   when: not passenger_conf_d.stat.exists 
     or not ( passenger_conf_temp.stat.checksum  == passenger_conf_d.stat.checksum )
-- name: notify
-  debug: msg="notify" 
-  changed_when: true
-  notify:
-    - Restart apache docker
-    - Restart apache systemd

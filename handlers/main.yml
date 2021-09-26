@@ -1,8 +1,9 @@
 ---
 # handlers file for apache_passenger
 - name: Restart apache docker
-  debug: 
-    msg: "docker"
+  become: yes
+  command: /usr/sbin/httpd -k graceful
+  changed_when: false
   when: is_docker.stdout | bool
 - name: Restart apache systemd
   become: yes

@@ -19,12 +19,24 @@
   notify:
     - Restart apache docker
     - Restart apache systemd
+- name: check passenger path
+  become: yes
+  become_method: sudo
+  become_flags: '-i'
+  shell: passenger-install-apache2-module --snippet|grep passenger_module|cut -d " " -f 3
+  register: passenger_path
+  changed_when: false
+- name: is passenger installed
+  stat:
+    path: "{{ passenger_path.stdout_lines[0] }}"
+  register: is_passenger_installed
 - name: install passenger apache2 module
   become: yes
   become_method: sudo
   become_flags: '-i'
   command: passenger-install-apache2-module --auto --languages ruby
   changed_when: false
+  when: not is_passenger_installed.stat.exists
 - name: get passenger.conf
   become: yes
   become_method: sudo
